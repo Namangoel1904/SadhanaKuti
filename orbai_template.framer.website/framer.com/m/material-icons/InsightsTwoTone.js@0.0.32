@@ -1,0 +1,8 @@
+/*
+ * InsightsTwoTone (material-icons/InsightsTwoTone@0.0.32)
+ *
+ * Learn More: https://www.framer.com/asset-urls
+ */
+
+export * from "https://framerusercontent.com/modules/TQmb0itKorEuOHGGlrSB/2WJjDZ3UlcbvEJN1Ae4f/InsightsTwoTone.js"
+export { default } from "https://framerusercontent.com/modules/TQmb0itKorEuOHGGlrSB/2WJjDZ3UlcbvEJN1Ae4f/InsightsTwoTone.js"

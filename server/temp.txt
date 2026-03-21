@@ -1,0 +1,104 @@
+Q1. A particle is moving with a constant velocity of 5 m/s in a circular path of radius 2 m. What is the centripetal acceleration of the particle? 
+
+A. 1.25 m/s2 
+
+*B. 12.5 m/s2 
+
+C. 5 m/s2 
+
+D. 10 m/s2
+
+Q2. Two vectors of the same magnitude have a resultant equal to either of the two vectors. The angle between the two vectors is:
+
+A. 60 degrees 
+
+B. 90 degrees 
+
+*C. 120 degrees 
+
+D. 180 degrees
+
+Q3. An alternating emf of 0.2 V is applied across an L-C-R series circuit having R = 4 Ohm, C = 80 microFarad, and L = 200 mH. At resonance, the voltage drop across the inductor is: 
+
+A. 0.2 V 
+
+B. 4 V 
+
+*C. 10 V 
+
+D. 0 V
+
+Q4. What is the percentage of Carbon in Urea [H2N-CO-NH2] given the molecular mass of urea is 60 g/mol and Carbon is 12 g/mol? 
+
+A. 12% 
+
+*B. 20% 
+
+C. 33% 
+
+D. 40%
+
+Q5. For the reaction N2(g) + 3H2(g) -> 2NH3(g), what volume of ammonia is produced from 2 L of Hydrogen at the same temperature and pressure? 
+
+A. 1 L 
+
+*B. 1.33 L 
+
+C. 2.66 L 
+
+D. 3 L
+
+Q6. Which of the following is the SI unit of force? 
+
+A. Joule 
+
+B. Watt 
+
+*C. Newton 
+
+D. Pascal
+
+Q7. The principal value of sin-1(-sqrt(3)/2) is: 
+
+A. pi/3 
+
+B. -pi/6 
+
+*C. -pi/3 
+
+D. 2pi/3
+
+Q8. The value of the integral of 1/(sin x * cos x) dx is: 
+
+A. log|sin x| + C 
+
+*B. log|tan x| + C 
+
+C. log|cos x| + C 
+
+D. tan x + C
+
+Q9. If matrix X = [[3, -4], [1, -1]], then which of the following represents the value of X to the power of n? 
+
+*A. [[1+2n, -4n], [n, 1-2n]] 
+
+B. [[3n, -4n], [n, -n]] 
+
+C. [[3^n, (-4)^n], [1^n, (-1)^n]] 
+
+D. [[1+n, 5-n], [n, -n]]
+
+Q10. A die is thrown n times until the lowest number on the die appeared. If the mean is 3, what is the value of n? 
+
+A. 2 
+
+*B. 3 
+
+C. 4 
+
+D. 5
+
+
+
+
+

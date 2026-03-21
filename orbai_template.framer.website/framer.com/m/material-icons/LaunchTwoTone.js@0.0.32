@@ -1,0 +1,8 @@
+/*
+ * LaunchTwoTone (material-icons/LaunchTwoTone@0.0.32)
+ *
+ * Learn More: https://www.framer.com/asset-urls
+ */
+
+export * from "https://framerusercontent.com/modules/W8SYFh815wqyH2CQQohs/Eusq6lyxsAHYHmITSP2t/LaunchTwoTone.js"
+export { default } from "https://framerusercontent.com/modules/W8SYFh815wqyH2CQQohs/Eusq6lyxsAHYHmITSP2t/LaunchTwoTone.js"

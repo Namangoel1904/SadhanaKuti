@@ -1,0 +1,8 @@
+/*
+ * Stack (phosphor-icons/Stack@0.0.53)
+ *
+ * Learn More: https://www.framer.com/asset-urls
+ */
+
+export * from "https://framerusercontent.com/modules/CxO1sjWH58mtQE83CxA8/Ab0ue3YfVXRMTd4JfaxT/Stack.js"
+export { default } from "https://framerusercontent.com/modules/CxO1sjWH58mtQE83CxA8/Ab0ue3YfVXRMTd4JfaxT/Stack.js"

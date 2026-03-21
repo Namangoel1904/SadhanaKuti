@@ -1,0 +1,8 @@
+/*
+ * SupportAgentTwoTone (material-icons/SupportAgentTwoTone@0.0.32)
+ *
+ * Learn More: https://www.framer.com/asset-urls
+ */
+
+export * from "https://framerusercontent.com/modules/F3YSY4IdOQxwIzlW5MeF/tIIuJSzVKfRFX4hYcRhG/SupportAgentTwoTone.js"
+export { default } from "https://framerusercontent.com/modules/F3YSY4IdOQxwIzlW5MeF/tIIuJSzVKfRFX4hYcRhG/SupportAgentTwoTone.js"

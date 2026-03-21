@@ -1,0 +1,8 @@
+/*
+ * Robot (phosphor-icons/Robot@0.0.53)
+ *
+ * Learn More: https://www.framer.com/asset-urls
+ */
+
+export * from "https://framerusercontent.com/modules/H7KqrkZPkQ0QvAvrGejx/RmJiOXnm2L01efHpKlXi/Robot.js"
+export { default } from "https://framerusercontent.com/modules/H7KqrkZPkQ0QvAvrGejx/RmJiOXnm2L01efHpKlXi/Robot.js"

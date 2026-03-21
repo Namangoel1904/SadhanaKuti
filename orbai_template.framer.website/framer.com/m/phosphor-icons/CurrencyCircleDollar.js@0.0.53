@@ -1,0 +1,8 @@
+/*
+ * CurrencyCircleDollar (phosphor-icons/CurrencyCircleDollar@0.0.53)
+ *
+ * Learn More: https://www.framer.com/asset-urls
+ */
+
+export * from "https://framerusercontent.com/modules/AhnyM7URmJvpfxy3l7ns/x9AT3Sx9G6bzBll5qByJ/CurrencyCircleDollar.js"
+export { default } from "https://framerusercontent.com/modules/AhnyM7URmJvpfxy3l7ns/x9AT3Sx9G6bzBll5qByJ/CurrencyCircleDollar.js"

@@ -1,0 +1,8 @@
+/*
+ * RocketLaunch (phosphor-icons/RocketLaunch@0.0.53)
+ *
+ * Learn More: https://www.framer.com/asset-urls
+ */
+
+export * from "https://framerusercontent.com/modules/WdnqBlrpvZrDZDJ1UvaI/91WgTli9sp1yDHic07T9/RocketLaunch.js"
+export { default } from "https://framerusercontent.com/modules/WdnqBlrpvZrDZDJ1UvaI/91WgTli9sp1yDHic07T9/RocketLaunch.js"

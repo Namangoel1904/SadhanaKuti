@@ -1,0 +1,8 @@
+/*
+ * UserSwitch (phosphor-icons/UserSwitch@0.0.53)
+ *
+ * Learn More: https://www.framer.com/asset-urls
+ */
+
+export * from "https://framerusercontent.com/modules/K71kRXofeRwLK2p6gYq5/SxFxQ2wVrafSmWovmMJO/UserSwitch.js"
+export { default } from "https://framerusercontent.com/modules/K71kRXofeRwLK2p6gYq5/SxFxQ2wVrafSmWovmMJO/UserSwitch.js"
