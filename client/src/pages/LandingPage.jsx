@@ -709,7 +709,7 @@ export default function LandingPage() {
                   e.preventDefault();
                   setContactStatus({ loading: true, success: false, error: '' });
                   try {
-                    const res = await fetch('http://localhost:5000/api/messages', {
+                    const res = await fetch('/api/messages', {
                       method: 'POST',
                       headers: { 'Content-Type': 'application/json' },
                       body: JSON.stringify(contactForm),
