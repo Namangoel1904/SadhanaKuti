@@ -10,8 +10,19 @@ import { InlineMath, BlockMath } from 'react-katex';
 const MathText = ({ text = '' }) => {
   if (typeof text !== 'string') return text;
 
+  // Fallback: If it looks like raw TeX (starts with \ and has no $)
+  // This handles exports from some editors where options are just raw TeX
+  if (text.trim().startsWith('\\') && !text.includes('$')) {
+    try {
+      return <InlineMath math={text.trim()} />;
+    } catch (e) {
+      return <span>{text}</span>;
+    }
+  }
+
   // Split text by $$ (block math) and $ (inline math)
   const parts = text.split(/(\$\$[\s\S]*?\$\$|\$[\s\S]*?\$)/g);
+
 
   return (
     <span>

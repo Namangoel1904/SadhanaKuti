@@ -1,8 +1,10 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Toaster, toast } from 'react-hot-toast';
-import api from '../api';
 import { useAuth } from '../context/AuthContext';
+import { getExams, getMyRegistrations, getQuestionPaperStudent, startAttempt, submitAttempt } from '../api';
 import MathText from '../components/MathText';
+
 
 // MHT-CET Section Config
 const getExamConfig = (stream) => {
