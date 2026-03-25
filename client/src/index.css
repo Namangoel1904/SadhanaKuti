@@ -21,7 +21,36 @@
   --not-answered: #FF6B35;
   --marked:      #7B61FF;
   --marked-answered: #5B3FD9;
+
+  /* Exam Theme Variables (Defaults to Dark) */
+  --exam-bg: linear-gradient(135deg, #0D1117 0%, #161B22 100%);
+  --exam-header: rgba(22, 27, 34, 0.95);
+  --exam-tabs: rgba(13, 17, 23, 0.8);
+  --exam-sidebar: rgba(22, 27, 34, 0.95);
+  --exam-text: #E6EDF3;
+  --exam-text-muted: rgba(230,237,243,0.4);
+  --exam-text-dim: rgba(230,237,243,0.6);
+  --exam-border: rgba(255, 255, 255, 0.08);
+  --exam-card: rgba(255, 255, 255, 0.04);
+  --exam-input-bg: rgba(255, 255, 255, 0.06);
 }
+
+[data-theme='light'] {
+  --exam-bg: #F9FAFB;
+  --exam-header: rgba(255, 255, 255, 0.95);
+  --exam-tabs: rgba(243, 244, 246, 0.9);
+  --exam-sidebar: #FFFFFF;
+  --exam-text: #111827;
+  --exam-text-muted: #6B7280;
+  --exam-text-dim: #4B5563;
+  --exam-border: #E5E7EB;
+  --exam-card: #FFFFFF;
+  --exam-input-bg: #F3F4F6;
+  
+  /* Overrides for light mode specifics */
+  --gold: #B45309; /* Slightly darker gold for accessibility on white */
+}
+
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 

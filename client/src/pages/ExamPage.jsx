@@ -91,6 +91,8 @@ export default function ExamPage() {
   const [examId, setExamId] = useState(null);
   const [showFullscreenWarning, setShowFullscreenWarning] = useState(false);
   const [violations, setViolations] = useState(0);
+  const [isDarkMode, setIsDarkMode] = useState(localStorage.getItem('examTheme') !== 'light');
+
 
   const captureRef = useRef(false);
   const submitRef = useRef(null); // Updated in useEffect after definition
@@ -388,12 +390,15 @@ export default function ExamPage() {
   const sectionConfig = config?.sections?.[section];
 
   return (
-    <div className="exam-bg" style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', userSelect: 'none' }}>
-      
+    <div className="exam-bg" data-theme={isDarkMode ? 'dark' : 'light'} style={{ 
+      display: 'flex', flexDirection: 'column', height: '100vh', width: '100vw', 
+      overflow: 'hidden', position: 'fixed', inset: 0,
+      background: 'var(--exam-bg)', color: 'var(--exam-text)'
+    }}>
       {/* ── Fullscreen Warning Modal ── */}
       {showFullscreenWarning && !submitted && (
         <div style={{
-          position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.95)', backdropFilter: 'blur(10px)',
+          position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(13,17,23,0.95)', backdropFilter: 'blur(10px)',
           display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
           color: 'white', padding: 24, textAlign: 'center'
         }}>
@@ -401,7 +406,7 @@ export default function ExamPage() {
           <h2 style={{ fontFamily: 'Outfit', fontWeight: 800, fontSize: 32, marginBottom: 16, color: '#f87171' }}>
             Warning: Fullscreen Exited
           </h2>
-          <p style={{ fontSize: 16, color: 'rgba(230,237,243,0.8)', marginBottom: 32, maxWidth: 500, lineHeight: 1.6 }}>
+          <p style={{ fontSize: 16, color: 'var(--exam-text-dim)', marginBottom: 32, maxWidth: 500, lineHeight: 1.6 }}>
             You have exited fullscreen mode. The exam is temporarily paused and the interface is locked. 
             Please return to fullscreen to continue your exam.
           </p>
@@ -425,19 +430,33 @@ export default function ExamPage() {
       )}
       {/* ── Top Bar ── */}
       <header className="exam-topbar" style={{
-        background: 'rgba(22,27,34,0.95)', backdropFilter: 'blur(16px)',
-        borderBottom: '1px solid rgba(255,255,255,0.06)',
+        background: 'var(--exam-header)', backdropFilter: 'blur(16px)',
+        borderBottom: '1px solid var(--exam-border)',
         padding: '10px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         position: 'sticky', top: 0, zIndex: 30,
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
           <div style={{ fontFamily: 'Outfit', fontWeight: 800, fontSize: 14, color: 'var(--gold)' }}>CETPortal</div>
-          <div style={{ height: 20, width: 1, background: 'rgba(255,255,255,0.1)' }} />
-          <div style={{ fontSize: 13, color: 'rgba(230,237,243,0.7)' }}>
+          <div style={{ height: 20, width: 1, background: 'var(--exam-border)' }} />
+          <div style={{ fontSize: 13, color: 'var(--exam-text-dim)' }}>
             {exam?.title || 'MHT-CET Mock Test'}
           </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+          <button 
+            onClick={() => {
+              const newMode = !isDarkMode;
+              setIsDarkMode(newMode);
+              localStorage.setItem('examTheme', newMode ? 'dark' : 'light');
+            }}
+            style={{
+              padding: '6px 12px', background: 'var(--exam-input-bg)', border: '1px solid var(--exam-border)',
+              borderRadius: 8, color: 'var(--exam-text)', cursor: 'pointer', fontSize: 14,
+              display: 'flex', alignItems: 'center', gap: 6, transition: 'all 0.2s'
+            }}
+          >
+            {isDarkMode ? '☀️ Light' : '🌙 Dark'}
+          </button>
           {violations > 0 && (
             <div style={{
               background: 'rgba(220,38,38,0.15)',
@@ -466,7 +485,7 @@ export default function ExamPage() {
 
       {/* ── Section Tabs ── */}
       <div style={{
-        background: 'rgba(13,17,23,0.8)', borderBottom: '1px solid rgba(255,255,255,0.05)',
+        background: 'var(--exam-tabs)', borderBottom: '1px solid var(--exam-border)',
         display: 'flex', padding: '0 20px',
       }}>
         {config?.sections?.map((s, i) => (
@@ -475,18 +494,19 @@ export default function ExamPage() {
             disabled={i === 0 && section1Locked}
             style={{
               padding: '10px 20px', border: 'none', background: 'transparent',
-              color: section === i ? 'var(--gold)' : 'rgba(230,237,243,0.4)',
+              color: section === i ? 'var(--gold)' : 'var(--exam-text-muted)',
               fontFamily: 'Outfit', fontWeight: 600, fontSize: 13, cursor: (i === 0 && section1Locked) ? 'not-allowed' : 'pointer',
               borderBottom: section === i ? '2px solid var(--gold)' : '2px solid transparent',
               transition: 'all 0.2s', opacity: (i === 0 && section1Locked) ? 0.4 : 1,
             }}>
             {s.label} {i === 0 && section1Locked ? '🔒' : ''}
-            <span style={{ marginLeft: 6, fontSize: 11, color: 'rgba(230,237,243,0.4)' }}>
+            <span style={{ marginLeft: 6, fontSize: 11, color: 'var(--exam-text-muted)' }}>
               ({answers[i]?.filter(a => a.selectedOption).length}/{questions[i]?.length})
             </span>
           </button>
         ))}
       </div>
+
 
       {/* ── Main Content ── */}
       <div className="exam-layout" style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
@@ -500,12 +520,13 @@ export default function ExamPage() {
                 acc.push(
                   <button key={si} onClick={() => navigateTo(section, startQ)}
                     style={{
-                      padding: '6px 14px', background: 'rgba(255,255,255,0.06)',
-                      border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8,
-                      color: '#E6EDF3', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'Outfit',
+                      padding: '6px 14px', background: 'var(--exam-input-bg)',
+                      border: '1px solid var(--exam-border)', borderRadius: 8,
+                      color: 'var(--exam-text)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'Outfit',
                     }}>
                     {subj} (Q{startQ + 1}–Q{startQ + sectionConfig.counts[si]})
                   </button>
+
                 );
                 return acc;
               }, [])}
@@ -527,13 +548,14 @@ export default function ExamPage() {
 
               {/* Question text */}
               <div style={{
-                background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
+                background: 'var(--exam-card)', border: '1px solid var(--exam-border)',
                 borderRadius: 14, padding: '24px', marginBottom: 20,
-                fontSize: 16, lineHeight: 1.7, color: '#E6EDF3',
+                fontSize: 16, lineHeight: 1.7, color: 'var(--exam-text)',
               }}>
                 <strong style={{ fontFamily: 'Outfit', color: 'var(--gold)', marginRight: 8 }}>Q{currentQ + 1}.</strong>
                 <MathText text={currentQuestion.questionText} />
               </div>
+
 
 
               {/* Options */}
@@ -546,13 +568,14 @@ export default function ExamPage() {
                       width: 28, height: 28, borderRadius: '50%', flexShrink: 0,
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       fontWeight: 700, fontSize: 13, fontFamily: 'Outfit',
-                      background: curAnswer?.selectedOption === key ? 'var(--gold)' : 'rgba(255,255,255,0.08)',
-                      color: curAnswer?.selectedOption === key ? 'var(--forest)' : 'rgba(230,237,243,0.7)',
-                      border: `2px solid ${curAnswer?.selectedOption === key ? 'var(--gold)' : 'rgba(255,255,255,0.1)'}`,
+                      background: curAnswer?.selectedOption === key ? 'var(--gold)' : 'var(--exam-input-bg)',
+                      color: curAnswer?.selectedOption === key ? (isDarkMode ? 'var(--forest)' : 'white') : 'var(--exam-text-dim)',
+                      border: `2px solid ${curAnswer?.selectedOption === key ? 'var(--gold)' : 'var(--exam-border)'}`,
                     }}>{key}</div>
-                    <span style={{ fontSize: 15, lineHeight: 1.6, color: curAnswer?.selectedOption === key ? '#E6EDF3' : 'rgba(230,237,243,0.8)' }}>
+                    <span style={{ fontSize: 15, lineHeight: 1.6, color: curAnswer?.selectedOption === key ? 'var(--exam-text)' : 'var(--exam-text-dim)' }}>
                       <MathText text={val} />
                     </span>
+
                   </div>
 
                 ))}
@@ -560,23 +583,24 @@ export default function ExamPage() {
 
               {/* Action bar */}
               <div style={{ display: 'flex', gap: 10, marginTop: 20, flexWrap: 'wrap' }}>
-                <button onClick={toggleMark} style={{
-                  padding: '10px 18px', background: curAnswer?.markedForReview ? 'rgba(123,97,255,0.2)' : 'rgba(255,255,255,0.06)',
-                  border: `1px solid ${curAnswer?.markedForReview ? 'rgba(123,97,255,0.5)' : 'rgba(255,255,255,0.1)'}`,
-                  borderRadius: 10, color: curAnswer?.markedForReview ? '#a78bfa' : '#E6EDF3',
-                  fontFamily: 'Outfit', fontWeight: 600, fontSize: 13, cursor: 'pointer',
-                }}>🟣 {curAnswer?.markedForReview ? 'Unmark' : 'Mark for Review'}</button>
-                <button onClick={clearResponse} style={{
-                  padding: '10px 18px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
-                  borderRadius: 10, color: 'rgba(230,237,243,0.6)', fontFamily: 'Outfit', fontWeight: 600, fontSize: 13, cursor: 'pointer',
-                }}>✕ Clear</button>
-                <div style={{ flex: 1 }} />
-                <button onClick={goPrev} disabled={currentQ === 0}
-                  style={{
-                    padding: '10px 18px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)',
-                    borderRadius: 10, color: '#E6EDF3', fontFamily: 'Outfit', fontWeight: 600, fontSize: 13, cursor: 'pointer',
-                    opacity: currentQ === 0 ? 0.3 : 1,
-                  }}>← Prev</button>
+                  <button onClick={toggleMark} style={{
+                    padding: '10px 18px', background: curAnswer?.markedForReview ? 'rgba(123,97,255,0.2)' : 'var(--exam-input-bg)',
+                    border: `1px solid ${curAnswer?.markedForReview ? 'rgba(123,97,255,0.5)' : 'var(--exam-border)'}`,
+                    borderRadius: 10, color: curAnswer?.markedForReview ? '#a78bfa' : 'var(--exam-text)',
+                    fontFamily: 'Outfit', fontWeight: 600, fontSize: 13, cursor: 'pointer',
+                  }}>🟣 {curAnswer?.markedForReview ? 'Unmark' : 'Mark for Review'}</button>
+                  <button onClick={clearResponse} style={{
+                    padding: '10px 18px', background: 'var(--exam-input-bg)', border: '1px solid var(--exam-border)',
+                    borderRadius: 10, color: 'var(--exam-text-dim)', fontFamily: 'Outfit', fontWeight: 600, fontSize: 13, cursor: 'pointer',
+                  }}>✕ Clear</button>
+                  <div style={{ flex: 1 }} />
+                  <button onClick={goPrev} disabled={currentQ === 0}
+                    style={{
+                      padding: '10px 18px', background: 'var(--exam-input-bg)', border: '1px solid var(--exam-border)',
+                      borderRadius: 10, color: 'var(--exam-text)', fontFamily: 'Outfit', fontWeight: 600, fontSize: 13, cursor: 'pointer',
+                      opacity: currentQ === 0 ? 0.3 : 1,
+                    }}>← Prev</button>
+
                 <button onClick={goNext} disabled={currentQ === questions[section].length - 1}
                   style={{
                     padding: '10px 18px', background: 'linear-gradient(135deg, var(--gold), var(--gold-light))',
@@ -595,12 +619,12 @@ export default function ExamPage() {
 
         {/* ── Question Palette ── */}
         <div className="exam-sidebar" style={{
-          width: 260, background: 'rgba(22,27,34,0.95)', borderLeft: '1px solid rgba(255,255,255,0.06)',
+          width: 260, background: 'var(--exam-sidebar)', borderLeft: '1px solid var(--exam-border)',
           padding: '16px', display: 'flex', flexDirection: 'column', overflowY: 'auto',
         }}>
           {/* Legend */}
           <div style={{ marginBottom: 14 }}>
-            <div style={{ fontSize: 11, fontWeight: 600, color: 'rgba(230,237,243,0.4)', letterSpacing: 0.8, textTransform: 'uppercase', marginBottom: 10 }}>Question Status</div>
+            <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--exam-text-muted)', letterSpacing: 0.8, textTransform: 'uppercase', marginBottom: 10 }}>Question Status</div>
             {[
               ['not-visited', 'Not Visited'],
               ['answered', 'Answered'],
@@ -610,22 +634,24 @@ export default function ExamPage() {
             ].map(([cls, label]) => (
               <div key={cls} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
                 <div className={`q-box ${cls}`} style={{ width: 22, height: 22, fontSize: 10, flexShrink: 0 }} />
-                <span style={{ fontSize: 11, color: 'rgba(230,237,243,0.6)' }}>{label}</span>
+                <span style={{ fontSize: 11, color: 'var(--exam-text-dim)' }}>{label}</span>
               </div>
             ))}
           </div>
 
-          <div style={{ height: 1, background: 'rgba(255,255,255,0.06)', marginBottom: 14 }} />
+          <div style={{ height: 1, background: 'var(--exam-border)', marginBottom: 14 }} />
+
 
           {/* Palette */}
           <div style={{ flex: 1 }}>
             {/* Section 1 labels */}
             {[0, 1].map(si => (
               <div key={si} style={{ marginBottom: 12 }}>
-                <div style={{ fontSize: 11, color: 'rgba(230,237,243,0.4)', fontWeight: 600, marginBottom: 8 }}>
+                <div style={{ fontSize: 11, color: 'var(--exam-text-muted)', fontWeight: 600, marginBottom: 8 }}>
                   {config?.sections?.[si]?.label?.split(':')[1] || `S${si+1}`}
                   {si === 0 && section1Locked ? ' 🔒' : ''}
                 </div>
+
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                   {questions[si].map((_, qi) => {
                     const status = getQStatus(si, qi);
