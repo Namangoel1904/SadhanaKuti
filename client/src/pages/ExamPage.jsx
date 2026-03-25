@@ -7,22 +7,37 @@ import MathText from '../components/MathText';
 
 
 // MHT-CET Section Config
-const getExamConfig = (stream) => {
-  if (stream === 'PCM') {
-    return {
-      sections: [
-        { label: 'Section 1: Physics & Chemistry', subjects: ['Physics', 'Chemistry'], counts: [50, 50], totalQ: 100, marksPerQ: 1, duration: 90 },
-        { label: 'Section 2: Mathematics', subjects: ['Mathematics'], counts: [50], totalQ: 50, marksPerQ: 2, duration: 90 },
-      ]
-    };
-  }
+const getExamConfig = (stream, subjectConfig) => {
+  const sc = subjectConfig || {
+    section1: { partA: { label: 'Physics', count: 50 }, partB: { label: 'Chemistry', count: 50 } },
+    section2: { label: stream === 'PCB' ? 'Biology' : 'Mathematics' }
+  };
+
+  const s1Count = (sc.section1.partA.count || 50) + (sc.section1.partB.count || 50);
+  const s2Count = stream === 'BOTH' ? 150 : (stream === 'PCM' ? 50 : 100); // MHT-CET standard still applies for total but label matches config
+
   return {
     sections: [
-      { label: 'Section 1: Physics & Chemistry', subjects: ['Physics', 'Chemistry'], counts: [50, 50], totalQ: 100, marksPerQ: 1, duration: 90 },
-      { label: 'Section 2: Biology', subjects: ['Botany', 'Zoology'], counts: [50, 50], totalQ: 100, marksPerQ: 1, duration: 90 },
+      { 
+        label: `Section 1: ${sc.section1.partA.label} & ${sc.section1.partB.label}`, 
+        subjects: [sc.section1.partA.label, sc.section1.partB.label], 
+        counts: [sc.section1.partA.count, sc.section1.partB.count], 
+        totalQ: s1Count, 
+        marksPerQ: 1, 
+        duration: 90 
+      },
+      { 
+        label: `Section 2: ${sc.section2.label}`, 
+        subjects: [sc.section2.label], 
+        counts: [stream === 'PCB' ? 100 : 50], 
+        totalQ: stream === 'PCB' ? 100 : 50, 
+        marksPerQ: stream === 'PCB' ? 1 : 2, 
+        duration: 90 
+      },
     ]
   };
 };
+
 
 const Q_STATUS = { NOT_VISITED: 'not-visited', ANSWERED: 'answered', NOT_ANSWERED: 'not-answered', MARKED: 'marked', MARKED_ANSWERED: 'marked-answered' };
 
@@ -103,9 +118,11 @@ export default function ExamPage() {
         const eId = confirmed.exam._id || confirmed.exam;
         setExamId(eId);
 
-        const cfg = getExamConfig(user.stream);
+        const currentStream = confirmed.student?.stream || user.stream || 'PCM';
+        const cfg = getExamConfig(currentStream, confirmed.exam.subjectConfig);
         setConfig(cfg);
         setExam(confirmed.exam);
+
 
         // Fetch questions
         const qData = await getQuestionPaperStudent(eId);

@@ -24,7 +24,14 @@ const TABS = [
 function ExamsTab() {
   const [exams, setExams] = useState([]);
   const [modal, setModal] = useState(null); // null | 'create' | exam object
-  const [form, setForm] = useState({ title: '', date: '', time: '', syllabus: '', centerName: '', centerAddress: '', stream: 'PCM', feeAmount: 200, qrImageUrl: '' });
+  const [form, setForm] = useState({ 
+    title: '', date: '', time: '', syllabus: '', centerName: '', centerAddress: '', stream: 'PCM', feeAmount: 200, qrImageUrl: '',
+    subjectConfig: {
+      section1: { partA: { label: 'Physics', count: 50 }, partB: { label: 'Chemistry', count: 50 } },
+      section2: { label: 'Biology' } // Changed later based on stream
+    }
+  });
+
   const [saving, setSaving] = useState(false);
 
   const load = async () => {
@@ -33,10 +40,26 @@ function ExamsTab() {
   useEffect(() => { load(); }, []);
 
   const openCreate = () => {
-    setForm({ title: '', date: '', time: '', syllabus: '', centerName: '', centerAddress: '', stream: 'PCM', feeAmount: 200, qrImageUrl: '' });
+    setForm({ 
+      title: '', date: '', time: '', syllabus: '', centerName: '', centerAddress: '', stream: 'PCM', feeAmount: 200, qrImageUrl: '',
+      subjectConfig: {
+        section1: { partA: { label: 'Physics', count: 50 }, partB: { label: 'Chemistry', count: 50 } },
+        section2: { label: 'Mathematics' }
+      }
+    });
     setModal('create');
   };
-  const openEdit = (exam) => { setForm({ ...exam }); setModal(exam); };
+  const openEdit = (exam) => { 
+    setForm({ 
+      ...exam, 
+      subjectConfig: exam.subjectConfig || {
+        section1: { partA: { label: 'Physics', count: 50 }, partB: { label: 'Chemistry', count: 50 } },
+        section2: { label: exam.stream === 'PCB' ? 'Biology' : 'Mathematics' }
+      }
+    }); 
+    setModal(exam); 
+  };
+
 
   const handleSave = async (e) => {
     e.preventDefault(); setSaving(true);
@@ -98,12 +121,59 @@ function ExamsTab() {
               ))}
               <div style={{ marginBottom: 20 }}>
                 <label className="form-label">Stream</label>
-                <select className="form-input" value={form.stream} onChange={e => F('stream', e.target.value)}>
+                <select className="form-input" value={form.stream} onChange={e => {
+                  const s = e.target.value;
+                  setForm(f => ({
+                    ...f,
+                    stream: s,
+                    subjectConfig: {
+                      ...f.subjectConfig,
+                      section2: { label: s === 'PCB' ? 'Biology' : 'Mathematics' }
+                    }
+                  }));
+                }}>
                   <option value="PCM">PCM (JEE/MHT-CET)</option>
                   <option value="PCB">PCB (NEET/PCB)</option>
                   <option value="BOTH">BOTH</option>
                 </select>
               </div>
+
+              {/* Subject Config */}
+              <div style={{ background: 'rgba(0,0,0,0.03)', padding: 16, borderRadius: 12, marginBottom: 20 }}>
+                <h4 style={{ fontFamily: 'Outfit', fontWeight: 700, fontSize: 14, marginBottom: 12, color: 'var(--forest)' }}>Section 1 Configuration</h4>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 10 }}>
+                  <div>
+                    <label className="form-label" style={{ fontSize: 11 }}>Part A Label</label>
+                    <input className="form-input" value={form.subjectConfig.section1.partA.label} 
+                      onChange={e => setForm(f => ({...f, subjectConfig: {...f.subjectConfig, section1: {...f.subjectConfig.section1, partA: {...f.subjectConfig.section1.partA, label: e.target.value}} }}))} />
+                  </div>
+                  <div>
+                    <label className="form-label" style={{ fontSize: 11 }}>Part A Q Count</label>
+                    <input className="form-input" type="number" value={form.subjectConfig.section1.partA.count} 
+                      onChange={e => setForm(f => ({...f, subjectConfig: {...f.subjectConfig, section1: {...f.subjectConfig.section1, partA: {...f.subjectConfig.section1.partA, count: Number(e.target.value)}} }}))} />
+                  </div>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                  <div>
+                    <label className="form-label" style={{ fontSize: 11 }}>Part B Label</label>
+                    <input className="form-input" value={form.subjectConfig.section1.partB.label} 
+                      onChange={e => setForm(f => ({...f, subjectConfig: {...f.subjectConfig, section1: {...f.subjectConfig.section1, partB: {...f.subjectConfig.section1.partB, label: e.target.value}} }}))} />
+                  </div>
+                  <div>
+                    <label className="form-label" style={{ fontSize: 11 }}>Part B Q Count</label>
+                    <input className="form-input" type="number" value={form.subjectConfig.section1.partB.count} 
+                      onChange={e => setForm(f => ({...f, subjectConfig: {...f.subjectConfig, section1: {...f.subjectConfig.section1, partB: {...f.subjectConfig.section1.partB, count: Number(e.target.value)}} }}))} />
+                  </div>
+                </div>
+
+                <h4 style={{ fontFamily: 'Outfit', fontWeight: 700, fontSize: 14, marginTop: 16, marginBottom: 12, color: 'var(--forest)' }}>Section 2 Configuration</h4>
+                <div>
+                  <label className="form-label" style={{ fontSize: 11 }}>Section 2 Label</label>
+                  <input className="form-input" value={form.subjectConfig.section2.label} 
+                    onChange={e => setForm(f => ({...f, subjectConfig: {...f.subjectConfig, section2: {label: e.target.value}} }))} />
+                </div>
+              </div>
+
               <div style={{ display: 'flex', gap: 12 }}>
                 <button type="button" onClick={() => setModal(null)} className="btn-outline" style={{ flex: 1 }}>Cancel</button>
                 <button type="submit" className="btn-primary" disabled={saving} style={{ flex: 1 }}>

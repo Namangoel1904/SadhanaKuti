@@ -10,7 +10,17 @@ const examSchema = new mongoose.Schema({
   stream: { type: String, enum: ['PCM', 'PCB', 'BOTH'], required: true },
   feeAmount: { type: Number, default: 0 },
   qrImageUrl: { type: String, default: '' },
+  subjectConfig: {
+    section1: {
+      partA: { label: { type: String, default: 'Physics' }, count: { type: Number, default: 50 } },
+      partB: { label: { type: String, default: 'Chemistry' }, count: { type: Number, default: 50 } }
+    },
+    section2: {
+      label: { type: String, default: 'Mathematics' } // or Biology
+    }
+  },
   isActive: { type: Boolean, default: true },
+
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
 }, { timestamps: true });
 
