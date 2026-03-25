@@ -9,6 +9,8 @@ import {
   getAdminAttempts, getAdmitCardData,
   getMessages, deleteMessage,
 } from '../api';
+import MathText from '../components/MathText';
+
 
 const TABS = [
   { key: 'exams', icon: '📋', label: 'Exams' },
@@ -265,16 +267,18 @@ function QuestionsTab() {
           {preview.slice(0, 10).map((q, i) => (
             <div key={i} className="glass-card" style={{ padding: '16px 20px', marginBottom: 10 }}>
               <div style={{ fontWeight: 600, fontSize: 14, color: 'var(--forest)', marginBottom: 10 }}>
-                {q.section ? `S${q.section} Q${q.qi}: ` : `Q${i+1}: `}{q.questionText}
+                {q.section ? `S${q.section} Q${q.qi}: ` : `Q${i+1}: `}<MathText text={q.questionText} />
               </div>
+
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
                 {Object.entries(q.options).map(([key, val]) => (
                   <div key={key} style={{
                     padding: '6px 12px', borderRadius: 8, fontSize: 13,
                     background: 'rgba(122,155,122,0.08)', border: '1px solid rgba(122,155,122,0.2)',
                   }}>
-                    <strong>{key}.</strong> {val}
+                    <strong>{key}.</strong> <MathText text={val} />
                   </div>
+
                 ))}
               </div>
             </div>

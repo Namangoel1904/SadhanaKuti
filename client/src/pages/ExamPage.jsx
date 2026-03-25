@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import toast from 'react-hot-toast';
+import { Toaster, toast } from 'react-hot-toast';
+import api from '../api';
 import { useAuth } from '../context/AuthContext';
-import { getExams, getMyRegistrations, getQuestionPaperStudent, startAttempt, submitAttempt } from '../api';
+import MathText from '../components/MathText';
 
 // MHT-CET Section Config
 const getExamConfig = (stream) => {
@@ -513,8 +513,9 @@ export default function ExamPage() {
                 fontSize: 16, lineHeight: 1.7, color: '#E6EDF3',
               }}>
                 <strong style={{ fontFamily: 'Outfit', color: 'var(--gold)', marginRight: 8 }}>Q{currentQ + 1}.</strong>
-                {currentQuestion.questionText}
+                <MathText text={currentQuestion.questionText} />
               </div>
+
 
               {/* Options */}
               <div>
@@ -531,9 +532,10 @@ export default function ExamPage() {
                       border: `2px solid ${curAnswer?.selectedOption === key ? 'var(--gold)' : 'rgba(255,255,255,0.1)'}`,
                     }}>{key}</div>
                     <span style={{ fontSize: 15, lineHeight: 1.6, color: curAnswer?.selectedOption === key ? '#E6EDF3' : 'rgba(230,237,243,0.8)' }}>
-                      {val}
+                      <MathText text={val} />
                     </span>
                   </div>
+
                 ))}
               </div>
 
