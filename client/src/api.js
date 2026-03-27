@@ -96,6 +96,9 @@ export const submitAttempt = (body) =>
 export const getMyAttempts = () =>
   fetch(`${API}/attempts/my`, { headers: headers() }).then(handleResponse);
 
+export const getMyAttemptDetails = (id) =>
+  fetch(`${API}/attempts/my/${id}/details`, { headers: headers() }).then(handleResponse);
+
 export const getAdminAttempts = () =>
   fetch(`${API}/attempts/admin`, { headers: headers() }).then(handleResponse);
 

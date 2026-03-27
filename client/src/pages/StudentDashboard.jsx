@@ -2,8 +2,10 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
-import { getExams, getMyRegistrations, registerForExam, getAdmitCardData, getMyAttempts } from '../api';
+import { getExams, getMyRegistrations, registerForExam, getAdmitCardData, getMyAttempts, getMyAttemptDetails } from '../api';
 import { generateAdmitCardPDF } from '../utils/generateAdmitCardPDF';
+import MathText from '../components/MathText';
+
 
 function NavBar({ user, logout }) {
   const nav = useNavigate();
@@ -111,12 +113,138 @@ function RegisterModal({ selectedExams, mode, totalFee, onClose, onSuccess }) {
             </button>
           </div>
         </form>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+function ResultDetailsModal({ attemptId, onClose }) {
+  const [details, setDetails] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    getMyAttemptDetails(attemptId).then(data => {
+      setDetails(data);
+      setLoading(false);
+    }).catch(err => {
+      toast.error(err.message);
+      onClose();
+    });
+  }, [attemptId]);
+
+  if (loading) return (
+    <div style={{
+      position: 'fixed', inset: 0, zIndex: 100,
+      background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(8px)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center'
+    }}>
+      <div className="glass-card" style={{ padding: 40, color: 'var(--forest)' }}>Loading analysis...</div>
+    </div>
+  );
+
+  const { attempt, section1Details, section2Details } = details;
+
+  const renderSection = (title, secDetails, sc) => (
+    <div style={{ marginBottom: 32 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+        <h3 style={{ fontFamily: 'Outfit', fontWeight: 800, fontSize: 18, color: 'var(--forest)' }}>{title}</h3>
+        <span className="badge badge-published">Score: {sc}</span>
+      </div>
+      {secDetails.map((q, i) => (
+        <div key={i} style={{ 
+          background: 'rgba(255,255,255,0.6)', border: `2px solid ${q.isCorrect ? 'rgba(16,185,129,0.3)' : (q.isAttempted ? 'rgba(248,113,113,0.3)' : 'rgba(0,0,0,0.05)')}`, 
+          borderRadius: 12, padding: 20, marginBottom: 16 
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
+            <span style={{ fontFamily: 'Outfit', fontWeight: 700, color: 'var(--forest)' }}>Q{i + 1}</span>
+            {q.isCorrect ? <span style={{ color: '#10B981', fontWeight: 700, fontSize: 13 }}>✅ Correct</span>
+             : (q.isAttempted ? <span style={{ color: '#EF4444', fontWeight: 700, fontSize: 13 }}>❌ Incorrect</span>
+             : <span style={{ color: '#888', fontWeight: 600, fontSize: 13 }}>○ Not Attempted</span>)}
+          </div>
+          <div style={{ fontSize: 15, marginBottom: 16, color: '#333', lineHeight: 1.6 }}>
+            <MathText text={q.questionText} />
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 8 }}>
+            {Object.entries(q.options).map(([k, v]) => {
+              const isStudentChoice = q.selectedOption === k;
+              const isActualCorrect = q.correctOption === k;
+              
+              let bg = 'rgba(0,0,0,0.02)';
+              let border = '1px solid rgba(0,0,0,0.05)';
+              let icon = '';
+              
+              if (isActualCorrect) {
+                 bg = 'rgba(16,185,129,0.1)';
+                 border = '2px solid rgba(16,185,129,0.5)';
+                 icon = '✓';
+              } else if (isStudentChoice && !isActualCorrect) {
+                 bg = 'rgba(248,113,113,0.1)';
+                 border = '2px solid rgba(248,113,113,0.5)';
+                 icon = '✗';
+              }
+              
+              return (
+                <div key={k} style={{ 
+                  padding: '10px 14px', background: bg, border, borderRadius: 8,
+                  display: 'flex', gap: 12, alignItems: 'center'
+                }}>
+                  <div style={{ fontWeight: 700, width: 24, height: 24, borderRadius: '50%', background: 'rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, flexShrink: 0, color: '#444' }}>
+                    {k}
+                  </div>
+                  <div style={{ flex: 1, fontSize: 14, color: '#333' }}><MathText text={v} /></div>
+                  {icon && <div style={{ fontWeight: 800, color: isActualCorrect ? '#10B981' : '#EF4444' }}>{icon}</div>}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+
+  return (
+    <div style={{
+      position: 'fixed', inset: 0, zIndex: 100,
+      background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px'
+    }} onClick={onClose}>
+      <div className="glass-card anim-fade-up" style={{ 
+        maxWidth: 800, width: '100%', height: '90vh', display: 'flex', flexDirection: 'column',
+        overflow: 'hidden', padding: 0 
+      }} onClick={e => e.stopPropagation()}>
+        
+        {/* Header */}
+        <div style={{ padding: '24px 32px', borderBottom: '1px solid rgba(0,0,0,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(245,240,232,0.5)' }}>
+          <div>
+            <h2 style={{ fontFamily: 'Outfit', fontWeight: 800, fontSize: 24, color: 'var(--forest)' }}>
+              Detailed Analysis
+            </h2>
+            <div style={{ fontSize: 13, color: '#777', marginTop: 4 }}>{attempt.exam?.title}</div>
+          </div>
+          <button onClick={onClose} style={{ background: 'transparent', border: 'none', fontSize: 28, cursor: 'pointer', color: '#888', lineHeight: 1 }}>×</button>
+        </div>
+
+        {/* Content */}
+        <div style={{ flex: 1, overflowY: 'auto', padding: '32px' }}>
+          
+          <div style={{ display: 'flex', gap: 20, marginBottom: 32 }}>
+             <div style={{ flex: 1, background: 'linear-gradient(135deg, var(--forest), var(--sage))', color: 'white', padding: 20, borderRadius: 16 }}>
+               <div style={{ fontSize: 12, opacity: 0.8, textTransform: 'uppercase', letterSpacing: 1, fontWeight: 600 }}>Total Score</div>
+               <div style={{ fontFamily: 'Outfit', fontSize: 36, fontWeight: 800 }}>{attempt.totalScore}<span style={{fontSize: 18, opacity: 0.7}}>/{attempt.maxScore}</span></div>
+             </div>
+          </div>
+
+          {renderSection('Section 1', section1Details, attempt.section1Score)}
+          {renderSection('Section 2', section2Details, attempt.section2Score)}
+        </div>
       </div>
     </div>
   );
 }
 
 export default function StudentDashboard() {
+
   const { user, logout } = useAuth();
   const [exams, setExams] = useState([]);
   const [myRegs, setMyRegs] = useState([]);
@@ -126,6 +254,7 @@ export default function StudentDashboard() {
   const [mode, setMode] = useState('online');
   const [showCheckout, setShowCheckout] = useState(false);
   const [fullscreenGateUrl, setFullscreenGateUrl] = useState(null);
+  const [viewDetailsId, setViewDetailsId] = useState(null);
   
   const [tab, setTab] = useState('available');
   const [loading, setLoading] = useState(true);
@@ -356,9 +485,16 @@ export default function StudentDashboard() {
                     </span>
                   </div>
                 </div>
-                <div style={{ marginTop: 12, display: 'flex', gap: 20, fontSize: 13 }}>
-                  <span style={{ color: '#55a' }}>Section 1: <strong>{attempt.section1Score}</strong>/100</span>
-                  <span style={{ color: '#a55' }}>Section 2: <strong>{attempt.section2Score}</strong>/100</span>
+                <div style={{ marginTop: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', gap: 20, fontSize: 13 }}>
+                    <span style={{ color: '#55a' }}>Section 1: <strong>{attempt.section1Score}</strong>/100</span>
+                    <span style={{ color: '#a55' }}>Section 2: <strong>{attempt.section2Score}</strong>/100</span>
+                  </div>
+                  {attempt.resultStatus === 'published' && (
+                    <button className="btn-outline" onClick={() => setViewDetailsId(attempt._id)} style={{ padding: '6px 14px', fontSize: 12 }}>
+                      📊 View Detailed Analysis
+                    </button>
+                  )}
                 </div>
               </div>
             ))}
@@ -366,7 +502,12 @@ export default function StudentDashboard() {
         )}
       </div>
 
+      {viewDetailsId && (
+        <ResultDetailsModal attemptId={viewDetailsId} onClose={() => setViewDetailsId(null)} />
+      )}
+
       {/* Floating Checkout Bar */}
+
       {selectedExamIds.length > 0 && (
         <div className="anim-fade-up" style={{
           position: 'fixed',

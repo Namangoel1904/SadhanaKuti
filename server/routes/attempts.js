@@ -96,13 +96,61 @@ router.post('/submit', authMiddleware, async (req, res) => {
 router.get('/my', authMiddleware, async (req, res) => {
   try {
     const attempts = await Attempt.find({ student: req.user._id })
-      .populate('exam', 'title date stream')
+      .populate('exam', 'title date stream subjectConfig')
       .sort({ submittedAt: -1 });
     res.json(attempts);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
+
+// Student: get detailed attempt result
+router.get('/my/:id/details', authMiddleware, async (req, res) => {
+  try {
+    const attempt = await Attempt.findOne({ _id: req.params.id, student: req.user._id })
+      .populate('exam', 'title date stream subjectConfig');
+    
+    if (!attempt) return res.status(404).json({ message: 'Attempt not found' });
+    if (!attempt.submittedAt) return res.status(400).json({ message: 'Exam not yet submitted' });
+
+    const QuestionPaper = require('../models/QuestionPaper');
+    const qp1 = await QuestionPaper.findOne({ exam: attempt.exam._id, section: 1 });
+    const qp2 = await QuestionPaper.findOne({ exam: attempt.exam._id, section: 2 });
+    
+    const ak1 = await AnswerKey.findOne({ exam: attempt.exam._id, section: 1 });
+    const ak2 = await AnswerKey.findOne({ exam: attempt.exam._id, section: 2 });
+
+    const processSection = (answers, qp, ak) => {
+      if (!qp || !ak) return [];
+      return qp.questions.map((q, idx) => {
+        const studentAns = answers.find(a => a.questionIndex === idx);
+        const selected = studentAns ? studentAns.selectedOption : '';
+        const correct = ak.answers[idx] || '';
+        return {
+          questionIndex: idx,
+          questionText: q.questionText,
+          options: q.options,
+          selectedOption: selected,
+          correctOption: correct,
+          isCorrect: selected !== '' && selected === correct,
+          isAttempted: selected !== ''
+        };
+      });
+    };
+
+    const section1Details = processSection(attempt.section1Answers, qp1, ak1);
+    const section2Details = processSection(attempt.section2Answers, qp2, ak2);
+
+    res.json({
+      attempt,
+      section1Details,
+      section2Details
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 
 // Admin: get all results
 router.get('/admin', authMiddleware, requireAdmin, async (req, res) => {
