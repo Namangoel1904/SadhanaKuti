@@ -113,8 +113,8 @@ function RegisterModal({ selectedExams, mode, totalFee, onClose, onSuccess }) {
             </button>
           </div>
         </form>
-        </form>
       </div>
+
     </div>
   );
 }
