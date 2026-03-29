@@ -338,6 +338,9 @@ function QuestionsTab() {
             <div key={i} className="glass-card" style={{ padding: '16px 20px', marginBottom: 10 }}>
               <div style={{ fontWeight: 600, fontSize: 14, color: 'var(--forest)', marginBottom: 10 }}>
                 {q.section ? `S${q.section} Q${q.qi}: ` : `Q${i+1}: `}<MathText text={q.questionText} />
+                {q.questionImageUrl && (
+                  <div style={{ marginTop: 12 }}><img src={q.questionImageUrl} alt="Diagram" style={{ maxWidth: '100%', maxHeight: 200, borderRadius: 8 }} /></div>
+                )}
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
@@ -346,9 +349,11 @@ function QuestionsTab() {
                     padding: '6px 12px', borderRadius: 8, fontSize: 13,
                     background: 'rgba(122,155,122,0.08)', border: '1px solid rgba(122,155,122,0.2)',
                   }}>
-                    <strong>{key}.</strong> <MathText text={val} />
+                    <strong>{key}.</strong> <MathText text={val.text || val} />
+                    {val.imageUrl && (
+                      <div style={{ marginTop: 8 }}><img src={val.imageUrl} alt={`Option ${key}`} style={{ maxWidth: '100%', maxHeight: 120, borderRadius: 6 }} /></div>
+                    )}
                   </div>
-
                 ))}
               </div>
             </div>

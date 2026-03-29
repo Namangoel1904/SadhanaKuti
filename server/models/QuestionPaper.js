@@ -2,13 +2,15 @@ const mongoose = require('mongoose');
 
 const questionSchema = new mongoose.Schema({
   questionText: { type: String, required: true },
+  questionImageUrl: { type: String, default: '' },
   options: {
-    A: { type: String, required: true },
-    B: { type: String, required: true },
-    C: { type: String, required: true },
-    D: { type: String, required: true },
+    A: { text: { type: String, required: true }, imageUrl: { type: String, default: '' } },
+    B: { text: { type: String, required: true }, imageUrl: { type: String, default: '' } },
+    C: { text: { type: String, required: true }, imageUrl: { type: String, default: '' } },
+    D: { text: { type: String, required: true }, imageUrl: { type: String, default: '' } },
   },
 });
+
 
 const questionPaperSchema = new mongoose.Schema({
   exam: { type: mongoose.Schema.Types.ObjectId, ref: 'Exam', required: true },

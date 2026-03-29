@@ -164,9 +164,17 @@ function ResultDetailsModal({ attemptId, onClose }) {
           </div>
           <div style={{ fontSize: 15, marginBottom: 16, color: '#333', lineHeight: 1.6 }}>
             <MathText text={q.questionText} />
+            {q.questionImageUrl && (
+              <div style={{ marginTop: 12, textAlign: 'center' }}>
+                <img src={q.questionImageUrl} alt="Question Diagram" style={{ maxWidth: '100%', maxHeight: 200, borderRadius: 8 }} />
+              </div>
+            )}
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 8 }}>
             {Object.entries(q.options).map(([k, v]) => {
+              const optText = typeof v === 'object' && v !== null ? (v.text || '') : v;
+              const optImg = typeof v === 'object' && v !== null ? v.imageUrl : null;
+              
               const isStudentChoice = q.selectedOption === k;
               const isActualCorrect = q.correctOption === k;
               
@@ -192,7 +200,12 @@ function ResultDetailsModal({ attemptId, onClose }) {
                   <div style={{ fontWeight: 700, width: 24, height: 24, borderRadius: '50%', background: 'rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, flexShrink: 0, color: '#444' }}>
                     {k}
                   </div>
-                  <div style={{ flex: 1, fontSize: 14, color: '#333' }}><MathText text={v} /></div>
+                  <div style={{ flex: 1, fontSize: 14, color: '#333' }}>
+                    <MathText text={optText} />
+                    {optImg && (
+                      <div style={{ marginTop: 8 }}><img src={optImg} alt={`Option ${k}`} style={{ maxWidth: '100%', maxHeight: 120, borderRadius: 6 }} /></div>
+                    )}
+                  </div>
                   {icon && <div style={{ fontWeight: 800, color: isActualCorrect ? '#10B981' : '#EF4444' }}>{icon}</div>}
                 </div>
               );

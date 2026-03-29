@@ -554,6 +554,11 @@ export default function ExamPage() {
               }}>
                 <strong style={{ fontFamily: 'Outfit', color: 'var(--gold)', marginRight: 8 }}>Q{currentQ + 1}.</strong>
                 <MathText text={currentQuestion.questionText} />
+                {currentQuestion.questionImageUrl && (
+                  <div style={{ marginTop: 16, textAlign: 'center' }}>
+                    <img src={currentQuestion.questionImageUrl} alt="Question Diagram" style={{ maxWidth: '100%', maxHeight: 300, borderRadius: 8 }} />
+                  </div>
+                )}
               </div>
 
 
@@ -573,7 +578,10 @@ export default function ExamPage() {
                       border: `2px solid ${curAnswer?.selectedOption === key ? 'var(--gold)' : 'var(--exam-border)'}`,
                     }}>{key}</div>
                     <span style={{ fontSize: 15, lineHeight: 1.6, color: curAnswer?.selectedOption === key ? 'var(--exam-text)' : 'var(--exam-text-dim)' }}>
-                      <MathText text={val} />
+                      <MathText text={val.text || val} />
+                      {val.imageUrl && (
+                        <div style={{ marginTop: 8 }}><img src={val.imageUrl} alt={`Option ${key}`} style={{ maxWidth: '100%', maxHeight: 150, borderRadius: 6 }} /></div>
+                      )}
                     </span>
 
                   </div>
