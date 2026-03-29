@@ -57,10 +57,13 @@ router.post('/submit', authMiddleware, async (req, res) => {
     // Score section 2 (Maths 2 marks / Biology 1 mark — determined by exam stream)
     let s2Score = 0;
     const s2Answers = section2Answers || [];
-    // Get exam stream
+    // Get exam config to determine weightage
     const Exam = require('../models/Exam');
     const exam = await Exam.findById(examId);
-    const marksPerQ = exam && exam.stream === 'PCM' ? 2 : 1;
+
+    // Mathematics has 50 questions @ 2 marks each; Biology has 100 questions @ 1 mark each
+    const isMaths = exam && (exam.stream === 'PCM' || exam.subjectConfig?.section2?.label === 'Mathematics' || exam.subjectConfig?.section2?.label?.includes('Math'));
+    const marksPerQ = isMaths ? 2 : 1;
 
     if (ak2) {
       s2Answers.forEach(ans => {
