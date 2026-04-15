@@ -25,7 +25,8 @@ function ExamsTab() {
   const [exams, setExams] = useState([]);
   const [modal, setModal] = useState(null); // null | 'create' | exam object
   const [form, setForm] = useState({ 
-    title: '', date: '', time: '', syllabus: '', centerName: '', centerAddress: '', stream: 'PCM', feeAmount: 200, qrImageUrl: '',
+    title: '', startDate: '', endDate: '', time: '', syllabus: '', centerName: '', centerAddress: '',
+    stream: 'PCM', isFree: false, feeAmount: 200, qrImageUrl: '',
     subjectConfig: {
       section1: { partA: { label: 'Physics', count: 50 }, partB: { label: 'Chemistry', count: 50 } },
       section2: { label: 'Biology' } // Changed later based on stream
@@ -41,7 +42,8 @@ function ExamsTab() {
 
   const openCreate = () => {
     setForm({ 
-      title: '', date: '', time: '', syllabus: '', centerName: '', centerAddress: '', stream: 'PCM', feeAmount: 200, qrImageUrl: '',
+      title: '', startDate: '', endDate: '', time: '', syllabus: '', centerName: '', centerAddress: '',
+      stream: 'PCM', isFree: false, feeAmount: 200, qrImageUrl: '',
       subjectConfig: {
         section1: { partA: { label: 'Physics', count: 50 }, partB: { label: 'Chemistry', count: 50 } },
         section2: { label: 'Mathematics' }
@@ -51,7 +53,10 @@ function ExamsTab() {
   };
   const openEdit = (exam) => { 
     setForm({ 
-      ...exam, 
+      ...exam,
+      isFree: exam.isFree || false,
+      startDate: exam.startDate || exam.date || '',
+      endDate: exam.endDate || exam.date || '',
       subjectConfig: exam.subjectConfig || {
         section1: { partA: { label: 'Physics', count: 50 }, partB: { label: 'Chemistry', count: 50 } },
         section2: { label: exam.stream === 'PCB' ? 'Biology' : 'Mathematics' }
@@ -87,21 +92,32 @@ function ExamsTab() {
         <button className="btn-primary" onClick={openCreate}>+ Create Exam</button>
       </div>
 
-      {exams.map(exam => (
-        <div key={exam._id} className="glass-card" style={{ padding: '18px 22px', marginBottom: 14 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
-            <div>
-              <h3 style={{ fontFamily: 'Outfit', fontWeight: 700, fontSize: 16, color: 'var(--forest)', marginBottom: 4 }}>{exam.title}</h3>
-              <div style={{ fontSize: 13, color: '#777' }}>{exam.date} · {exam.time} · {exam.centerName} · <span className="badge badge-pending">{exam.stream}</span></div>
-              <div style={{ fontSize: 12, color: '#aaa', marginTop: 4 }}>₹{exam.feeAmount}</div>
-            </div>
-            <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-              <button className="btn-outline" style={{ padding: '7px 16px', fontSize: 13 }} onClick={() => openEdit(exam)}>Edit</button>
-              <button className="btn-outline btn-danger" style={{ padding: '7px 16px', fontSize: 13, color: '#dc2626', borderColor: '#dc2626' }} onClick={() => handleDelete(exam._id)}>Remove</button>
+      {exams.map(exam => {
+        const dateDisplay = exam.startDate
+          ? (exam.endDate && exam.endDate !== exam.startDate ? `${exam.startDate} → ${exam.endDate}` : exam.startDate)
+          : (exam.date || '—');
+        return (
+          <div key={exam._id} className="glass-card" style={{ padding: '18px 22px', marginBottom: 14 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
+                  <h3 style={{ fontFamily: 'Outfit', fontWeight: 700, fontSize: 16, color: 'var(--forest)' }}>{exam.title}</h3>
+                  {exam.isFree
+                    ? <span style={{ background: 'rgba(16,185,129,0.15)', color: '#10B981', border: '1px solid rgba(16,185,129,0.4)', borderRadius: 20, padding: '2px 10px', fontSize: 11, fontWeight: 700 }}>🆓 FREE</span>
+                    : <span style={{ background: 'rgba(234,179,8,0.15)', color: '#b45309', border: '1px solid rgba(234,179,8,0.4)', borderRadius: 20, padding: '2px 10px', fontSize: 11, fontWeight: 700 }}>💳 PAID</span>
+                  }
+                </div>
+                <div style={{ fontSize: 13, color: '#777' }}>📅 {dateDisplay} · 🕐 {exam.time} · {exam.centerName} · <span className="badge badge-pending">{exam.stream}</span></div>
+                {!exam.isFree && <div style={{ fontSize: 12, color: '#aaa', marginTop: 4 }}>₹{exam.feeAmount}</div>}
+              </div>
+              <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                <button className="btn-outline" style={{ padding: '7px 16px', fontSize: 13 }} onClick={() => openEdit(exam)}>Edit</button>
+                <button className="btn-outline btn-danger" style={{ padding: '7px 16px', fontSize: 13, color: '#dc2626', borderColor: '#dc2626' }} onClick={() => handleDelete(exam._id)}>Remove</button>
+              </div>
             </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
 
       {/* Exam Modal */}
       {modal && (
@@ -113,12 +129,50 @@ function ExamsTab() {
               {modal === 'create' ? 'Create New Exam' : 'Edit Exam'}
             </h2>
             <form onSubmit={handleSave}>
-              {[['title','Exam Title','MHT-CET Mock Test 01', 'text'],['date','Date (YYYY-MM-DD)','2026-06-15', 'date'],['time','Time (HH:MM)','09:00', 'time'],['syllabus','Syllabus / Topics','Physics Ch 1-5, Chemistry Ch 1-4...', 'text'],['centerName','Center Name','Pune Exam Center', 'text'],['centerAddress','Center Address','123, FC Road, Pune - 411004', 'text'],['qrImageUrl','QR Image URL (optional)','https://...', 'url']].map(([key, label, ph, type]) => (
+              {/* Free / Paid Toggle */}
+              <div style={{ marginBottom: 18 }}>
+                <label className="form-label">Exam Type</label>
+                <div style={{ display: 'flex', gap: 4, background: 'rgba(0,0,0,0.05)', borderRadius: 10, padding: 4, width: 'fit-content' }}>
+                  {[false, true].map(v => (
+                    <button type="button" key={String(v)} onClick={() => F('isFree', v)}
+                      style={{
+                        padding: '7px 18px', border: 'none', borderRadius: 8, cursor: 'pointer',
+                        fontFamily: 'Outfit', fontWeight: 700, fontSize: 13,
+                        background: form.isFree === v ? (v ? '#10B981' : '#f59e0b') : 'transparent',
+                        color: form.isFree === v ? '#fff' : '#666',
+                        transition: 'all 0.2s',
+                      }}>
+                      {v ? '🆓 Free' : '💳 Paid'}
+                    </button>
+                  ))}
+                </div>
+                {!form.isFree && (
+                  <div style={{ marginTop: 10 }}>
+                    <label className="form-label" style={{ fontSize: 12 }}>Fee Amount (₹)</label>
+                    <input className="form-input" type="number" value={form.feeAmount || 200} onChange={e => F('feeAmount', Number(e.target.value))} />
+                  </div>
+                )}
+              </div>
+
+              {/* Basic fields */}
+              {[['title','Exam Title','MHT-CET Mock Test 01', 'text'],['time','Time (HH:MM)','09:00', 'time'],['syllabus','Syllabus / Topics','Physics Ch 1-5, Chemistry Ch 1-4...', 'text'],['centerName','Center Name','Pune Exam Center', 'text'],['centerAddress','Center Address','123, FC Road, Pune - 411004', 'text'],['qrImageUrl','QR Image URL (optional)','https://...', 'url']].map(([key, label, ph, type]) => (
                 <div key={key} style={{ marginBottom: 14 }}>
                   <label className="form-label">{label}</label>
                   <input className="form-input" type={type} placeholder={ph} value={form[key] || ''} onChange={e => F(key, e.target.value)} required={key !== 'qrImageUrl'} />
                 </div>
               ))}
+
+              {/* Date Range */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 14 }}>
+                <div>
+                  <label className="form-label">Start Date</label>
+                  <input className="form-input" type="date" value={form.startDate || ''} onChange={e => F('startDate', e.target.value)} required />
+                </div>
+                <div>
+                  <label className="form-label">End Date</label>
+                  <input className="form-input" type="date" value={form.endDate || ''} onChange={e => F('endDate', e.target.value)} required />
+                </div>
+              </div>
               <div style={{ marginBottom: 20 }}>
                 <label className="form-label">Stream</label>
                 <select className="form-input" value={form.stream} onChange={e => {

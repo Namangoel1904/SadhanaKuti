@@ -41,6 +41,10 @@ function RegisterModal({ selectedExams, mode, totalFee, onClose, onSuccess }) {
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
 
+  const allFree = selectedExams.every(ex => ex.isFree);
+  const hasPaid = selectedExams.some(ex => !ex.isFree);
+  const qrImageUrl = selectedExams.find(ex => !ex.isFree)?.qrImageUrl;
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -49,17 +53,14 @@ function RegisterModal({ selectedExams, mode, totalFee, onClose, onSuccess }) {
       fd.append('examIds', JSON.stringify(selectedExams.map(ex => ex._id)));
       fd.append('mode', mode);
       if (file) fd.append('paymentScreenshot', file);
-      
-      await registerForExam(fd);
-      toast.success('Registration submitted! Under verification.');
+      const res = await registerForExam(fd);
+      toast.success(res.confirmed ? 'Registered & Confirmed instantly! 🎉' : 'Registration submitted! Under verification.');
       onSuccess();
       onClose();
     } catch (err) {
       toast.error(err.message);
     } finally { setLoading(false); }
   };
-
-  const qrImageUrl = selectedExams[0]?.qrImageUrl;
 
   return (
     <div style={{
@@ -70,51 +71,65 @@ function RegisterModal({ selectedExams, mode, totalFee, onClose, onSuccess }) {
       <div className="glass-card anim-fade-up" style={{ maxWidth: 460, width: '100%', padding: '32px 28px', maxHeight: '90vh', overflowY: 'auto' }}
         onClick={e => e.stopPropagation()}>
         <h2 style={{ fontFamily: 'Outfit', fontWeight: 800, fontSize: 22, color: 'var(--forest)', marginBottom: 4 }}>
-          Checkout ({selectedExams.length} Exams)
+          Checkout ({selectedExams.length} Exam{selectedExams.length > 1 ? 's' : ''})
         </h2>
-        <p style={{ fontSize: 13, color: '#888', marginBottom: 24 }}>Mode: <strong style={{color: 'var(--forest)', textTransform: 'capitalize'}}>{mode}</strong></p>
+        <p style={{ fontSize: 13, color: '#888', marginBottom: 16 }}>Mode: <strong style={{color: 'var(--forest)', textTransform: 'capitalize'}}>{mode}</strong></p>
 
-        {/* QR section */}
-        <div style={{
-          background: 'linear-gradient(135deg, var(--forest) 0%, var(--forest-mid) 100%)',
-          borderRadius: 14, padding: '20px', textAlign: 'center', marginBottom: 20,
-        }}>
-          <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.7)', marginBottom: 8 }}>
-            Total Fee: <strong style={{ color: 'var(--gold)' }}>₹{totalFee}</strong>
-          </div>
-          {qrImageUrl ? (
-            <img src={qrImageUrl} alt="Payment QR" style={{ maxWidth: 180, borderRadius: 10 }} />
-          ) : (
-            <div style={{
-              width: 180, height: 180, background: 'rgba(255,255,255,0.1)',
-              borderRadius: 10, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 13, color: 'rgba(255,255,255,0.5)', border: '2px dashed rgba(255,255,255,0.2)',
-            }}>
-              QR Code will be<br />set by Admin
+        {/* Per-exam FREE/PAID list */}
+        <div style={{ marginBottom: 20 }}>
+          {selectedExams.map(ex => (
+            <div key={ex._id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 12px', background: 'rgba(0,0,0,0.03)', borderRadius: 8, marginBottom: 6 }}>
+              <span style={{ fontSize: 14, color: '#333', fontWeight: 500 }}>{ex.title}</span>
+              {ex.isFree
+                ? <span style={{ background: 'rgba(16,185,129,0.15)', color: '#10B981', border: '1px solid rgba(16,185,129,0.4)', borderRadius: 20, padding: '2px 10px', fontSize: 11, fontWeight: 700 }}>🆓 FREE</span>
+                : <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--forest)' }}>₹{ex.feeAmount || 200}</span>
+              }
             </div>
-          )}
-          <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)', marginTop: 10 }}>
-            Scan &amp; pay, then upload screenshot below
-          </div>
+          ))}
         </div>
 
+
         <form onSubmit={handleSubmit}>
-          <div style={{ marginBottom: 16 }}>
-            <label className="form-label">Payment Screenshot</label>
-            <input type="file" accept="image/*" onChange={e => setFile(e.target.files[0])}
-              style={{ display: 'block', marginTop: 6 }} required />
-          </div>
+          {hasPaid && (
+            <>
+              <div style={{
+                background: 'linear-gradient(135deg, var(--forest) 0%, var(--forest-mid) 100%)',
+                borderRadius: 14, padding: '20px', textAlign: 'center', marginBottom: 20,
+              }}>
+                <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.7)', marginBottom: 8 }}>
+                  Total Paid Amount: <strong style={{ color: 'var(--gold)' }}>₹{totalFee}</strong>
+                </div>
+                {qrImageUrl ? (
+                  <img src={qrImageUrl} alt="Payment QR" style={{ maxWidth: 180, borderRadius: 10 }} />
+                ) : (
+                  <div style={{ width: 180, height: 180, background: 'rgba(255,255,255,0.1)', borderRadius: 10, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, color: 'rgba(255,255,255,0.5)', border: '2px dashed rgba(255,255,255,0.2)' }}>
+                    QR Code will be<br />set by Admin
+                  </div>
+                )}
+                <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)', marginTop: 10 }}>Scan &amp; pay, then upload screenshot below</div>
+              </div>
+              <div style={{ marginBottom: 16 }}>
+                <label className="form-label">Payment Screenshot</label>
+                <input type="file" accept="image/*" onChange={e => setFile(e.target.files[0])} style={{ display: 'block', marginTop: 6 }} required />
+              </div>
+            </>
+          )}
+          {allFree && (
+            <div style={{ background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.3)', borderRadius: 12, padding: '16px', marginBottom: 20, textAlign: 'center' }}>
+              <div style={{ fontSize: 28, marginBottom: 6 }}>🆓</div>
+              <div style={{ fontWeight: 700, color: '#10B981', fontSize: 15 }}>This exam is FREE!</div>
+              <div style={{ fontSize: 13, color: '#555', marginTop: 4 }}>No payment needed. You'll be confirmed instantly.</div>
+            </div>
+          )}
           <div style={{ display: 'flex', gap: 12 }}>
-            <button type="button" onClick={onClose} className="btn-outline" style={{ flex: 1, padding: '11px' }}>
-              Cancel
-            </button>
-            <button type="submit" className="btn-primary" disabled={loading || !file} style={{ flex: 1, padding: '11px' }}>
-              {loading ? 'Submitting...' : 'Submit for Verification'}
+            <button type="button" onClick={onClose} className="btn-outline" style={{ flex: 1, padding: '11px' }}>Cancel</button>
+            <button type="submit" className="btn-primary" disabled={loading || (hasPaid && !file)}
+              style={{ flex: 1, padding: '11px', background: allFree ? '#10B981' : undefined }}>
+              {loading ? 'Submitting...' : allFree ? '🆓 Register Free' : 'Submit for Verification'}
             </button>
           </div>
         </form>
       </div>
-
     </div>
   );
 }
@@ -311,9 +326,11 @@ export default function StudentDashboard() {
     );
   };
 
-  // Fee calculation
+  // Fee calculation — free exams count 0
   const calculateFee = () => {
-    const n = selectedExamIds.length;
+    const selectedExams = exams.filter(e => selectedExamIds.includes(e._id));
+    const paidExams = selectedExams.filter(e => !e.isFree);
+    const n = paidExams.length;
     if (n === 0) return 0;
     if (mode === 'offline') {
       return Math.floor(n / 4) * 999 + (n % 4) * 300;
@@ -376,6 +393,11 @@ export default function StudentDashboard() {
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 20 }}>
                   {availableExams.map(exam => {
                     const isSelected = selectedExamIds.includes(exam._id);
+                    const dateDisplay = exam.startDate
+                      ? (exam.endDate && exam.endDate !== exam.startDate
+                          ? `${exam.startDate} → ${exam.endDate}`
+                          : exam.startDate)
+                      : (exam.date || '');
                     return (
                       <div key={exam._id} className="glass-card" 
                         style={{ 
@@ -384,18 +406,25 @@ export default function StudentDashboard() {
                           background: isSelected ? 'rgba(26,46,26,0.02)' : 'var(--cream)'
                         }}
                         onClick={() => toggleSelection(exam._id)}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
                           <h3 style={{ fontFamily: 'Outfit', fontWeight: 700, fontSize: 17, color: 'var(--forest)' }}>{exam.title}</h3>
                           <div style={{
                             width: 24, height: 24, borderRadius: 6, border: '2px solid var(--forest)',
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
                             background: isSelected ? 'var(--forest)' : 'transparent',
-                            color: 'var(--cream)', fontSize: 14
+                            color: 'var(--cream)', fontSize: 14, flexShrink: 0, marginLeft: 8,
                           }}>
                             {isSelected && '✓'}
                           </div>
                         </div>
-                        {[['📅', exam.date], ['🕐', exam.time], ['📍', exam.centerName]].map(([icon, val]) => (
+                        {/* FREE / PAID badge */}
+                        <div style={{ marginBottom: 10 }}>
+                          {exam.isFree
+                            ? <span style={{ background: 'rgba(16,185,129,0.15)', color: '#10B981', border: '1px solid rgba(16,185,129,0.4)', borderRadius: 20, padding: '3px 12px', fontSize: 12, fontWeight: 700 }}>🆓 FREE — No payment needed</span>
+                            : <span style={{ background: 'rgba(234,179,8,0.12)', color: '#b45309', border: '1px solid rgba(234,179,8,0.35)', borderRadius: 20, padding: '3px 12px', fontSize: 12, fontWeight: 700 }}>💳 PAID</span>
+                          }
+                        </div>
+                        {[['📅', dateDisplay], ['🕐', exam.time], ['📍', exam.centerName]].map(([icon, val]) => (
                           <div key={icon} style={{ display: 'flex', gap: 8, marginBottom: 6, fontSize: 13, color: '#666' }}>
                             <span>{icon}</span><span>{val}</span>
                           </div>
@@ -426,12 +455,17 @@ export default function StudentDashboard() {
                   <div>
                     <h3 style={{ fontFamily: 'Outfit', fontWeight: 700, fontSize: 17, color: 'var(--forest)', marginBottom: 6 }}>
                       {reg.exam?.title} 
-                      <span className={`badge badge-${reg.status}`} style={{ marginLeft: 12, textTransform: 'capitalize' }}>
-                        {reg.mode} Mode
-                      </span>
+                      <span className={`badge badge-${reg.status}`} style={{ marginLeft: 12, textTransform: 'capitalize' }}>{reg.mode} Mode</span>
                     </h3>
                     <div style={{ fontSize: 13, color: '#777' }}>
-                      {reg.exam?.date} · {reg.exam?.time} {reg.mode === 'offline' && `· ${reg.exam?.centerName}`}
+                      {(() => {
+                        const ex = reg.exam;
+                        if (!ex) return null;
+                        const d = ex.startDate
+                          ? (ex.endDate && ex.endDate !== ex.startDate ? `${ex.startDate} → ${ex.endDate}` : ex.startDate)
+                          : (ex.date || '');
+                        return <>{d} · {ex.time}{reg.mode === 'offline' && ` · ${ex.centerName}`}</>;
+                      })()}
                     </div>
                     {reg.rollNumber && (
                       <div style={{ marginTop: 6, fontSize: 13, fontWeight: 600, color: 'var(--gold)' }}>
@@ -445,23 +479,31 @@ export default function StudentDashboard() {
                         : reg.status === 'confirmed' ? '✅ Confirmed'
                         : '❌ Rejected'}
                     </span>
+                    {reg.exam?.isFree && reg.status === 'confirmed' && (
+                      <span style={{ background: 'rgba(16,185,129,0.15)', color: '#10B981', border: '1px solid rgba(16,185,129,0.4)', borderRadius: 20, padding: '2px 10px', fontSize: 11, fontWeight: 700 }}>🆓 FREE</span>
+                    )}
                     {reg.status === 'confirmed' && reg.mode === 'offline' && (
                       <button className="btn-gold" style={{ padding: '8px 18px', fontSize: 13 }}
                         onClick={() => handleAdmitCard(reg)}>
                         📄 Download Admit Card
                       </button>
                     )}
-                    {reg.status === 'confirmed' && reg.mode === 'online' && reg.exam?.date === todayStr && (
-                      <button className="btn-gold" style={{ padding: '8px 18px', fontSize: 13, background: 'var(--gold)', color: 'var(--forest)' }}
-                        onClick={() => setFullscreenGateUrl(`/exam-engine/exam?examId=${reg.exam._id}&mode=online`)}>
-                        ▶ Start Online Exam
-                      </button>
-                    )}
-                    {reg.status === 'confirmed' && reg.mode === 'online' && reg.exam?.date !== todayStr && (
-                      <div style={{ fontSize: 12, color: '#888' }}>
-                        Exam link activates on {reg.exam?.date}
-                      </div>
-                    )}
+                    {reg.status === 'confirmed' && reg.mode === 'online' && (() => {
+                      const ex = reg.exam;
+                      if (!ex) return null;
+                      const today = todayStr;
+                      const start = ex.startDate || ex.date || '';
+                      const end = ex.endDate || ex.date || '';
+                      const isInRange = start && today >= start && (!end || today <= end);
+                      return isInRange ? (
+                        <button className="btn-gold" style={{ padding: '8px 18px', fontSize: 13, background: 'var(--gold)', color: 'var(--forest)' }}
+                          onClick={() => setFullscreenGateUrl(`/exam-engine/exam?examId=${ex._id}&mode=online`)}>
+                          ▶ Start Online Exam
+                        </button>
+                      ) : (
+                        <div style={{ fontSize: 12, color: '#888' }}>Exam link activates on {start}</div>
+                      );
+                    })()}
                   </div>
                 </div>
               </div>
@@ -520,70 +562,67 @@ export default function StudentDashboard() {
       )}
 
       {/* Floating Checkout Bar */}
-
-      {selectedExamIds.length > 0 && (
-        <div className="anim-fade-up" style={{
-          position: 'fixed',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          background: 'rgba(245,240,232,0.97)',
-          backdropFilter: 'blur(20px)',
-          padding: isMobile ? '12px 16px' : '16px 40px',
-          borderTop: '1px solid rgba(122,155,122,0.2)',
-          boxShadow: '0 -4px 30px rgba(0,0,0,0.1)',
-          zIndex: 50,
-          display: 'flex',
-          alignItems: 'center',
-          gap: isMobile ? 10 : 24,
-          flexWrap: isMobile ? 'wrap' : 'nowrap',
-          justifyContent: isMobile ? 'space-between' : 'center',
-        }}>
-          {/* Mode selector */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, flex: isMobile ? '1 1 auto' : undefined }}>
-            <div style={{ fontSize: 13, color: '#777', whiteSpace: 'nowrap' }}>
-              <strong>{selectedExamIds.length}</strong> exam{selectedExamIds.length > 1 ? 's' : ''}
-            </div>
-            <div style={{ display: 'flex', gap: 4, background: 'rgba(26,46,26,0.06)', borderRadius: 8, padding: 3 }}>
-              {['online', 'offline'].map(m => (
-                <button 
-                  key={m} 
-                  disabled={m === 'offline'}
-                  onClick={() => setMode(m)} 
-                  style={{
-                    padding: '5px 12px', border: 'none', borderRadius: 6, 
+      {selectedExamIds.length > 0 && (() => {
+        const selectedExams = availableExams.filter(e => selectedExamIds.includes(e._id));
+        const allFreeSelected = selectedExams.every(ex => ex.isFree);
+        return (
+          <div className="anim-fade-up" style={{
+            position: 'fixed', bottom: 0, left: 0, right: 0,
+            background: 'rgba(245,240,232,0.97)', backdropFilter: 'blur(20px)',
+            padding: isMobile ? '12px 16px' : '16px 40px',
+            borderTop: '1px solid rgba(122,155,122,0.2)',
+            boxShadow: '0 -4px 30px rgba(0,0,0,0.1)', zIndex: 50,
+            display: 'flex', alignItems: 'center',
+            gap: isMobile ? 10 : 24,
+            flexWrap: isMobile ? 'wrap' : 'nowrap',
+            justifyContent: isMobile ? 'space-between' : 'center',
+          }}>
+            {/* Mode selector */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, flex: isMobile ? '1 1 auto' : undefined }}>
+              <div style={{ fontSize: 13, color: '#777', whiteSpace: 'nowrap' }}>
+                <strong>{selectedExamIds.length}</strong> exam{selectedExamIds.length > 1 ? 's' : ''} selected
+              </div>
+              <div style={{ display: 'flex', gap: 4, background: 'rgba(26,46,26,0.06)', borderRadius: 8, padding: 3 }}>
+                {['online', 'offline'].map(m => (
+                  <button key={m} disabled={m === 'offline'} onClick={() => setMode(m)} style={{
+                    padding: '5px 12px', border: 'none', borderRadius: 6,
                     cursor: m === 'offline' ? 'not-allowed' : 'pointer',
                     fontFamily: 'Outfit', fontWeight: 600, fontSize: 12, textTransform: 'capitalize',
                     background: mode === m ? 'var(--forest)' : 'transparent',
                     color: mode === m ? 'var(--cream)' : (m === 'offline' ? '#ccc' : 'var(--forest)'),
                     transition: 'all 0.2s',
-                    position: 'relative'
-                  }}
-                >
-                  {m}
-                  {m === 'offline' && <span style={{ fontSize: 9, marginLeft: 4, verticalAlign: 'middle', opacity: 0.8 }}>(Soon)</span>}
-                </button>
-              ))}
+                  }}>
+                    {m}{m === 'offline' && <span style={{ fontSize: 9, marginLeft: 4, verticalAlign: 'middle', opacity: 0.8 }}>(Soon)</span>}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
 
-          {/* Fee info */}
-          <div style={{ textAlign: isMobile ? 'right' : 'right', flex: isMobile ? '0 1 auto' : 1 }}>
-            <div style={{ fontSize: 11, color: '#888', marginBottom: 1 }}>
-              {mode === 'offline' ? '₹300 (4 for ₹999)' : '₹200 (4 for ₹699)'}
+            {/* Fee info */}
+            <div style={{ textAlign: 'right', flex: isMobile ? '0 1 auto' : 1 }}>
+              {allFreeSelected ? (
+                <div style={{ fontFamily: 'Outfit', fontWeight: 800, fontSize: isMobile ? 16 : 20, color: '#10B981' }}>🆓 FREE</div>
+              ) : (
+                <>
+                  <div style={{ fontSize: 11, color: '#888', marginBottom: 1 }}>
+                    {mode === 'offline' ? '₹300 (4 for ₹999)' : '₹200 (4 for ₹699)'}
+                  </div>
+                  <div style={{ fontFamily: 'Outfit', fontWeight: 800, fontSize: isMobile ? 18 : 24, color: 'var(--forest)', whiteSpace: 'nowrap' }}>
+                    ₹{totalFee}
+                  </div>
+                </>
+              )}
             </div>
-            <div style={{ fontFamily: 'Outfit', fontWeight: 800, fontSize: isMobile ? 18 : 24, color: 'var(--forest)', whiteSpace: 'nowrap' }}>
-              ₹{totalFee}
-            </div>
-          </div>
 
-          {/* Checkout button */}
-          <button className="btn-primary" onClick={() => setShowCheckout(true)}
-            style={{ padding: isMobile ? '10px 18px' : '12px 28px', fontSize: isMobile ? 14 : 15, whiteSpace: 'nowrap' }}>
-            Checkout →
-          </button>
-        </div>
-      )}
+            {/* Checkout button */}
+            <button className="btn-primary" onClick={() => setShowCheckout(true)}
+              style={{ padding: isMobile ? '10px 18px' : '12px 28px', fontSize: isMobile ? 14 : 15, whiteSpace: 'nowrap',
+                background: allFreeSelected ? '#10B981' : undefined }}>
+              {allFreeSelected ? '🆓 Register Free →' : 'Checkout →'}
+            </button>
+          </div>
+        );
+      })()}
 
       {showCheckout && (
         <RegisterModal 

@@ -10,7 +10,7 @@ router.get('/', authMiddleware, async (req, res) => {
     if (req.user.role !== 'admin' && req.user.stream !== 'BOTH') {
       filter = { isActive: true, $or: [{ stream: req.user.stream }, { stream: 'BOTH' }] };
     }
-    const exams = await Exam.find(filter).sort({ date: 1 });
+    const exams = await Exam.find(filter).sort({ startDate: 1, date: 1 });
     res.json(exams);
   } catch (err) {
     res.status(500).json({ message: err.message });

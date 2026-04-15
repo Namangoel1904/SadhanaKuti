@@ -49,12 +49,27 @@ router.post('/', authMiddleware, upload.single('paymentScreenshot'), async (req,
       const existing = await Registration.findOne({ student: req.user._id, exam: eid });
       if (existing) continue;
 
+      const isFree = exam.isFree === true;
+
+      // For free exams auto-confirm; for paid exams use 'pending'
+      let status = 'pending';
+      let rollNumber = undefined;
+      if (isFree) {
+        status = 'confirmed';
+        const count = await Registration.countDocuments({ status: 'confirmed' });
+        rollNumber = `MHT-2026-${String(count + 1).padStart(4, '0')}`;
+      } else if (!paymentScreenshotUrl) {
+        // Paid exam but no screenshot uploaded — skip
+        continue;
+      }
+
       const reg = await Registration.create({
         student: req.user._id,
         exam: eid,
         mode,
-        paymentScreenshotUrl,
-        status: 'pending',
+        paymentScreenshotUrl: isFree ? '' : paymentScreenshotUrl,
+        status,
+        ...(rollNumber ? { rollNumber } : {}),
       });
       registrations.push(reg);
     }
@@ -63,7 +78,12 @@ router.post('/', authMiddleware, upload.single('paymentScreenshot'), async (req,
       return res.status(400).json({ message: 'No valid new registrations could be created. Check eligibility or previous registrations.' });
     }
 
-    res.status(201).json({ message: 'Registration submitted', count: registrations.length, registrations });
+    const allConfirmed = registrations.every(r => r.status === 'confirmed');
+    const msg = allConfirmed
+      ? 'Registration confirmed! You are all set.'
+      : 'Registration submitted! Under verification.';
+
+    res.status(201).json({ message: msg, confirmed: allConfirmed, count: registrations.length, registrations });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
